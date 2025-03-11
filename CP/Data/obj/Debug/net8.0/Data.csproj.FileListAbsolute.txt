@@ -1,0 +1,13 @@
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\bin\Debug\net8.0\DataLayer.deps.json
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\bin\Debug\net8.0\DataLayer.dll
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\bin\Debug\net8.0\DataLayer.pdb
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\Data.csproj.AssemblyReference.cache
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\Data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\Data.AssemblyInfoInputs.cache
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\Data.AssemblyInfo.cs
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\Data.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\Data.sourcelink.json
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\DataLayer.dll
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\refint\DataLayer.dll
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\DataLayer.pdb
+C:\Users\User\source\repos\Concurrent-Programming\CP\Data\obj\Debug\net8.0\ref\DataLayer.dll
