@@ -5,13 +5,16 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <RootNamespace> TP.ConcurrentProgramming.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>TP.ConcurrentProgramming.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
     <NoWarn>1701;1702;IDE0001</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
     <NoWarn>1701;1702;IDE0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>
@@ -25,7 +28,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Data\Data.csproj" />
+    <ProjectReference Include="..\PresentationModel\PresentationModel.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
