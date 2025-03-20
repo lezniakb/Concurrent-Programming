@@ -9,7 +9,7 @@
     <Window.DataContext>
         <vm:MainWindowViewModel />
     </Window.DataContext>
-    <Border BorderThickness="8" BorderBrush="Black" Height="520" Width="500">
+    <Border BorderThickness="8" BorderBrush="Black" Height="530" Width="500">
         <ItemsControl ItemsSource="{Binding Balls}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
