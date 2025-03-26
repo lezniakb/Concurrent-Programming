@@ -10,8 +10,8 @@
 
 namespace TP.ConcurrentProgramming.Data
 {
-    // implementacja klasy Ball używającej interfejsu IBall
-    // internal oznacza, że ta klasa dostępna jest tylko dla tego Assembly (Info.cs)
+  // implementacja klasy Ball używającej interfejsu IBall
+  // internal oznacza, że ta klasa dostępna jest tylko dla tego Assembly (Info.cs)
   internal class Ball : IBall
   {
     #region ctor
