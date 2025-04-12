@@ -97,7 +97,7 @@ namespace TP.ConcurrentProgramming.Data
 
         // Sprawdzenie, czy kula nie wychodzi poza granice
         // Jeśli kula wyjdzie poza obszar, odbij ją
-        // dodajemy/odejmujemy 8, gdyż jest to nasz border planszy
+        // Punktem odniesienia obiektu jest lewy górny róg
 
         if (positionY < 0 || positionY > 530 - diameter)
         {
