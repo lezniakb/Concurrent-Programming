@@ -53,5 +53,15 @@ namespace TP.ConcurrentProgramming.Data
     }
 
     #endregion private
-  }
+
+    #region public
+
+    // Właściwość publiczna dostępna tylko do odczytu
+    public IVector getPosition
+    {
+        get { return Position; }
+    }
+
+    #endregion public
+    }
 }

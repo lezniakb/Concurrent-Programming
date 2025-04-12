@@ -35,7 +35,8 @@ namespace TP.ConcurrentProgramming.Data
       Random random = new Random();
       for (int i = 0; i < numberOfBalls; i++)
       {
-        Vector startingPosition = new(random.Next(100, 1000 - 100), random.Next(50, 430 - 50));
+        Vector startingPosition = new(random.Next(100, 1000 - 100), random.Next(50, 530 - 50));
+        //Vector startingPosition = new(0, 0);
         Ball newBall = new(startingPosition, startingPosition);
         upperLayerHandler(startingPosition, newBall);
         BallsList.Add(newBall);
@@ -81,9 +82,43 @@ namespace TP.ConcurrentProgramming.Data
 
     private void Move(object? x)
     {
+
       foreach (Ball item in BallsList)
-        item.Move(new Vector((RandomGenerator.NextDouble() - 0.5) * 10, (RandomGenerator.NextDouble() - 0.5) * 10));
-    }
+        {
+        // Przemieszczamy kulę o mały krok od -5 do 5
+        double deltaX = (RandomGenerator.NextDouble() - 0.5) * 10; // Zmiana X
+        double deltaY = (RandomGenerator.NextDouble() - 0.5) * 10; // Zmiana Y
+
+        //Zmiana pozycji i średnica kuli
+        double positionX = item.getPosition.x + deltaX;
+        double positionY = item.getPosition.y + deltaY;
+        double diameter = 20.0;
+
+        // Sprawdzenie, czy kula nie wychodzi poza granice
+        // Jeśli kula wyjdzie poza obszar, odbij ją
+        // dodajemy/odejmujemy 8, gdyż jest to nasz border planszy
+
+        if (positionY + diameter / 2 < 8 || positionY + diameter / 2 > 522)
+        {
+            // Zmiana kierunku na przeciwny, jeśli kula jest poza dolną lub górną krawędzią
+            deltaY = -deltaY;  // Odbicie w osi Y
+        }
+
+        if (positionX + diameter / 2 < 8 || positionX + diameter / 2 > 992)
+        {
+            // Zmiana kierunku na przeciwny, jeśli kula jest poza lewą lub prawą krawędzią
+            deltaX = -deltaX;  // Odbicie w osi X
+        }
+
+        // Ustawienie nowej pozycji z uwzględnieniem odbicia
+        item.Move(new Vector(deltaX, deltaY));
+        }
+
+            /*
+              foreach (Ball item in BallsList)
+                item.Move(new Vector((RandomGenerator.NextDouble() - 0.5) * 10, (RandomGenerator.NextDouble() - 0.5) * 10));
+            */
+        }
 
     #endregion private
 
