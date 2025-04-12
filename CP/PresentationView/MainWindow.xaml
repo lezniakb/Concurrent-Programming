@@ -24,7 +24,7 @@
               Command="{Binding CreateBallsCommand}" 
               Margin="6,0,0,0" />
         </StackPanel>
-        <Border Grid.Row="1" BorderThickness="8" BorderBrush="Black" Height="530" Width="1000">
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" Height="530" Width="1000">
             <ItemsControl ItemsSource="{Binding Balls}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

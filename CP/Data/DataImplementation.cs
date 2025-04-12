@@ -19,7 +19,7 @@ namespace TP.ConcurrentProgramming.Data
 
     public DataImplementation()
     {
-      MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+      MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
     }
 
     #endregion ctor
@@ -36,8 +36,9 @@ namespace TP.ConcurrentProgramming.Data
       for (int i = 0; i < numberOfBalls; i++)
       {
         Vector startingPosition = new(random.Next(100, 1000 - 100), random.Next(50, 530 - 50));
-        //Vector startingPosition = new(0, 0);
-        Ball newBall = new(startingPosition, startingPosition);
+        //Vector startingPosition = new(random.Next(19, 20), random.Next(19, 20));
+                //Vector startingPosition = new(0, 0);
+                Ball newBall = new(startingPosition, startingPosition);
         upperLayerHandler(startingPosition, newBall);
         BallsList.Add(newBall);
       }
@@ -98,13 +99,13 @@ namespace TP.ConcurrentProgramming.Data
         // Jeśli kula wyjdzie poza obszar, odbij ją
         // dodajemy/odejmujemy 8, gdyż jest to nasz border planszy
 
-        if (positionY + diameter / 2 < 8 || positionY + diameter / 2 > 522)
+        if (positionY < 0 || positionY > 530 - diameter)
         {
             // Zmiana kierunku na przeciwny, jeśli kula jest poza dolną lub górną krawędzią
             deltaY = -deltaY;  // Odbicie w osi Y
         }
 
-        if (positionX + diameter / 2 < 8 || positionX + diameter / 2 > 992)
+        if (positionX < 0 || positionX > 1000 - diameter)
         {
             // Zmiana kierunku na przeciwny, jeśli kula jest poza lewą lub prawą krawędzią
             deltaX = -deltaX;  // Odbicie w osi X
