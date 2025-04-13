@@ -4,27 +4,40 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:vm="clr-namespace:TP.ConcurrentProgramming.Presentation.ViewModel;assembly=TP.ConcurrentProgramming.PresentationViewModel" 
+        xmlns:local="clr-namespace:TP.ConcurrentProgramming.PresentationView.Converters"
         mc:Ignorable="d" 
-        Title="Presentation layer targeting reactive behaviour" 
-        Height="auto" Width="auto">
+        Title="Presentation layer targeting reactive behaviour"
+        Width="{Binding Source={x:Static SystemParameters.PrimaryScreenWidth},
+                        Converter={StaticResource MultiplyConverter},
+                        ConverterParameter=0.75}"
+        Height="{Binding Source={x:Static SystemParameters.PrimaryScreenHeight},
+                         Converter={StaticResource MultiplyConverter},
+                         ConverterParameter=0.75}">
+
+    <Window.Resources>
+        <local:MultiplyConverter x:Key="MultiplyConverter"/>
+    </Window.Resources>
+
     <Window.DataContext>
         <vm:MainWindowViewModel />
     </Window.DataContext>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Margin="5" Grid.Row="0">
-            <TextBlock Text="Ilość kul:" VerticalAlignment="Center" />
+
+        <StackPanel Orientation="Horizontal" Margin="12" Grid.Row="0">
+            <TextBlock Text="Ilość kul:" VerticalAlignment="Center"/>
             <TextBox Width="42"
-               Text="{Binding InitialBallsNumber, UpdateSourceTrigger=PropertyChanged}" 
-               Margin="6,0,0,0" />
+                     Text="{Binding InitialBallsNumber, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="6,0,0,0"/>
             <Button Content="Dodaj" 
-              Command="{Binding CreateBallsCommand}" 
-              Margin="6,0,0,0" />
+                    Command="{Binding CreateBallsCommand}" 
+                    Margin="6,0,0,0"/>
         </StackPanel>
-        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" Height="530" Width="1000">
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" Margin="35">
             <ItemsControl ItemsSource="{Binding Balls}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -33,13 +46,13 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Ellipse Width="{Binding Diameter}" Height="{Binding Diameter}" Fill="Blue" />
+                        <Ellipse Width="{Binding Diameter}" Height="{Binding Diameter}" Fill="Blue"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
-                        <Setter Property="Canvas.Top" Value="{Binding Top}" />
-                        <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                        <Setter Property="Canvas.Top" Value="{Binding Top}"/>
+                        <Setter Property="Canvas.Left" Value="{Binding Left}"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
             </ItemsControl>
