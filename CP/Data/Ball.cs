@@ -10,58 +10,59 @@
 
 namespace TP.ConcurrentProgramming.Data
 {
-  // implementacja klasy Ball używającej interfejsu IBall
-  // internal oznacza, że ta klasa dostępna jest tylko dla tego Assembly (Info.cs)
-  internal class Ball : IBall
-  {
-    #region ctor
-
-        // konstruktor klasy - przyjmuje wektor pozycji i wektor poczatkowej predkosci
-    internal Ball(Vector initialPosition, Vector initialVelocity)
+    // Implementacja klasy Ball korzystającej z interfejsu IBall
+    // Internal oznacza, że ta klasa jest dostępna tylko w tym Assembly.
+    internal class Ball : IBall
     {
-      Position = initialPosition;
-      Velocity = initialVelocity;
-    }
+        #region ctor
 
-    #endregion ctor
+        // Konstruktor przyjmuje wektor pozycji początkowej i wektor początkowej prędkości.
+        internal Ball(Vector initialPosition, Vector initialVelocity)
+        {
+            Position = initialPosition;
+            Velocity = initialVelocity;
+        }
 
-    #region IBall
+        #endregion ctor
 
-        // definicja zdarzenia powiadamiajacaego, ktore wywolywane jest gdy pozycja kulki sie zmieni
-    public event EventHandler<IVector>? NewPositionNotification;
+        #region IBall
 
-    public IVector Velocity { get; set; }
+        // Zdarzenie powiadamiające o zmianie pozycji kulki.
+        public event EventHandler<IVector>? NewPositionNotification;
 
-    #endregion IBall
+        // Aktualna prędkość (która będzie używana przez symulację).
+        public IVector Velocity { get; set; }
 
-    #region private
+        #endregion IBall
 
-        // wektor pola kulki
-    private Vector Position;
-        
-        // handler do mowienia innym wartstwom o zmiany pozycji
-    private void RaiseNewPositionChangeNotification()
-    {
-      NewPositionNotification?.Invoke(this, Position);
-    }
+        #region private
 
-        // definicja poruszania sie kulki
-    internal void Move(Vector delta)
-    {
-      Position = new Vector(Position.x + delta.x, Position.y + delta.y);
-      RaiseNewPositionChangeNotification();
-    }
+        // Prywatne przechowywanie aktualnej pozycji kulki.
+        private Vector Position;
 
-    #endregion private
+        // Metoda powiadamiająca subskrybentów o naszej nowej pozycji.
+        private void RaiseNewPositionChangeNotification()
+        {
+            NewPositionNotification?.Invoke(this, Position);
+        }
 
-    #region public
+        // Metoda Move przyjmuje delta (różnicę) i dodaje ją do aktualnej pozycji.
+        internal void Move(Vector delta)
+        {
+            Position = new Vector(Position.x + delta.x, Position.y + delta.y);
+            RaiseNewPositionChangeNotification();
+        }
 
-    // Właściwość publiczna dostępna tylko do odczytu
-    public IVector getPosition
-    {
-        get { return Position; }
-    }
+        #endregion private
 
-    #endregion public
+        #region public
+
+        // Właściwość zwracająca aktualną pozycję (tylko do odczytu).
+        public IVector getPosition
+        {
+            get { return Position; }
+        }
+
+        #endregion public
     }
 }

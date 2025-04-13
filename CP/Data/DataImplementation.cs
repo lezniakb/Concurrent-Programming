@@ -10,39 +10,54 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading;
+using System.Collections.Generic;
 
 namespace TP.ConcurrentProgramming.Data
 {
-  internal class DataImplementation : DataAbstractAPI
-  {
+    internal class DataImplementation : DataAbstractAPI
+    {
         #region ctor
 
         public DataImplementation()
-    {
-      MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
-    }
+        {
+            // Ustawiamy timer, który wywołuje metodę Move co 16 ms (~60 FPS).
+            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
+        }
 
-    #endregion ctor
+        #endregion ctor
 
-    #region DataAbstractAPI
+        #region DataAbstractAPI
 
-    public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
-    {
-      if (Disposed)
-        throw new ObjectDisposedException(nameof(DataImplementation));
-      if (upperLayerHandler == null)
-        throw new ArgumentNullException(nameof(upperLayerHandler));
-      Random random = new Random();
-      for (int i = 0; i < numberOfBalls; i++)
-      {
-        Vector startingPosition = new(random.Next((int)(screenWidth * 0.1), screenWidth - (int)(screenWidth * 0.1)), random.Next((int)(screenHeight * 0.1), screenHeight - (int)(screenHeight * 0.1)));
-        //Vector startingPosition = new(random.Next(19, 20), random.Next(19, 20));
-                //Vector startingPosition = new(0, 0);
-                Ball newBall = new(startingPosition, startingPosition);
-        upperLayerHandler(startingPosition, newBall);
-        BallsList.Add(newBall);
-      }
-    }
+        public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
+        {
+            if (Disposed)
+                throw new ObjectDisposedException(nameof(DataImplementation));
+            if (upperLayerHandler == null)
+                throw new ArgumentNullException(nameof(upperLayerHandler));
+
+            Random random = new Random();
+            for (int i = 0; i < numberOfBalls; i++)
+            {
+                // pozycja poczatkowa, musi byc w obrebie min 10% od marginesu
+                Vector startingPosition = new Vector(
+                  random.Next((int)(screenWidth * 0.1), screenWidth - (int)(screenWidth * 0.1)),
+                  random.Next((int)(screenHeight * 0.1), screenHeight - (int)(screenHeight * 0.1))
+                );
+
+                // podstawowa predkosc kulek
+                Vector velocity = new Vector(
+                  (random.NextDouble() - 0.5) * 6,
+                  (random.NextDouble() - 0.5) * 6
+                );
+
+                // tworzenie kulki z ustalona pozycja i predkoscia
+                Ball newBall = new Ball(startingPosition, velocity);
+                upperLayerHandler(startingPosition, newBall);
+                BallsList.Add(newBall);
+            }
+        }
+
         public override void SetScreenSize(double width, double height)
         {
             screenWidth = (int)width;
@@ -54,26 +69,25 @@ namespace TP.ConcurrentProgramming.Data
         #region IDisposable
 
         protected virtual void Dispose(bool disposing)
-    {
-      if (!Disposed)
-      {
-        if (disposing)
         {
-          MoveTimer.Dispose();
-          BallsList.Clear();
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    MoveTimer.Dispose();
+                    BallsList.Clear();
+                }
+                Disposed = true;
+            }
+            else
+                throw new ObjectDisposedException(nameof(DataImplementation));
         }
-        Disposed = true;
-      }
-      else
-        throw new ObjectDisposedException(nameof(DataImplementation));
-    }
 
-    public override void Dispose()
-    {
-      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-      Dispose(disposing: true);
-      GC.SuppressFinalize(this);
-    }
+        public override void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
         #endregion IDisposable
 
@@ -82,51 +96,67 @@ namespace TP.ConcurrentProgramming.Data
         private int screenWidth;
         private int screenHeight;
 
-        //private bool disposedValue;
         private bool Disposed = false;
 
-    private readonly Timer MoveTimer;
-    private Random RandomGenerator = new();
-    private List<Ball> BallsList = [];
+        private readonly Timer MoveTimer;
+        private Random RandomGenerator = new();
+        private List<Ball> BallsList = new();
 
-    private void Move(object? x)
-    {
+        // srednica kulki
+        private const double BallDiameter = 20.0;
 
-      foreach (Ball item in BallsList)
+        /// <summary>
+        /// Metoda wywoływana przy każdym takcie timera.
+        /// Przemieszcza każdą kulkę zgodnie z jej prędkością,
+        /// odwracając kierunek ruchu, gdy kulka napotka brzeg ekranu.
+        /// </summary>
+        private void Move(object? state)
         {
-        // Przemieszczamy kulę o mały krok od -5 do 5
-        double deltaX = (RandomGenerator.NextDouble() - 0.5) * 10; // Zmiana X
-        double deltaY = (RandomGenerator.NextDouble() - 0.5) * 10; // Zmiana Y
+            foreach (Ball item in BallsList)
+            {
+                // pobierz obecna pozycje i predkosc
+                double posX = item.getPosition.x;
+                double posY = item.getPosition.y;
+                double predkoscX = item.Velocity.x;
+                double predkoscY = item.Velocity.y;
 
-        //Zmiana pozycji i średnica kuli
-        double positionX = item.getPosition.x + deltaX;
-        double positionY = item.getPosition.y + deltaY;
-        double diameter = 20.0;
+                // oblicz nowa pozycje
+                double positionX = posX + predkoscX;
+                double positionY = posY + predkoscY;
 
-        // Sprawdzenie, czy kula nie wychodzi poza granice
-        // Jeśli kula wyjdzie poza obszar, odbij ją
-        // Punktem odniesienia obiektu jest lewy górny róg
+                // sprawdz czy nie uderza w sciane boczna
+                if (positionX < 0)
+                {
+                    positionX = 0;
+                    predkoscX = -predkoscX;
+                }
+                else if (positionX > screenWidth - BallDiameter)
+                {
+                    positionX = screenWidth - BallDiameter;
+                    predkoscX = -predkoscX;
+                }
 
-        if (positionY < 0 || positionY > screenHeight - diameter)
-        {
-            // Zmiana kierunku na przeciwny, jeśli kula jest poza dolną lub górną krawędzią
-            deltaY = -deltaY;  // Odbicie w osi Y
-        }
+                // sprawdz czy nie uderza w sufit
+                if (positionY < 0)
+                {
+                    positionY = 0;
+                    predkoscY = -predkoscY;
+                }
+                else if (positionY > screenHeight - BallDiameter)
+                {
+                    positionY = screenHeight - BallDiameter;
+                    predkoscY = -predkoscY;
+                }
 
-        if (positionX < 0 || positionX > screenWidth - diameter)
-        {
-            // Zmiana kierunku na przeciwny, jeśli kula jest poza lewą lub prawą krawędzią
-            deltaX = -deltaX;  // Odbicie w osi X
-        }
+                // aktualizacja predkosci jesli zostala odwrocona
+                item.Velocity = new Vector(predkoscX, predkoscY);
 
-        // Ustawienie nowej pozycji z uwzględnieniem odbicia
-        item.Move(new Vector(deltaX, deltaY));
-        }
-
-            /*
-              foreach (Ball item in BallsList)
-                item.Move(new Vector((RandomGenerator.NextDouble() - 0.5) * 10, (RandomGenerator.NextDouble() - 0.5) * 10));
-            */
+                // obliczenie delty, czyli przesuniecia
+                double deltaX = positionX - posX;
+                double deltaY = positionY - posY;
+                // wywolanie Move ktore przesuwa kulke
+                item.Move(new Vector(deltaX, deltaY));
+            }
         }
 
         #endregion private
@@ -134,22 +164,22 @@ namespace TP.ConcurrentProgramming.Data
         #region TestingInfrastructure
 
         [Conditional("DEBUG")]
-    internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
-    {
-      returnBallsList(BallsList);
-    }
+        internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
+        {
+            returnBallsList(BallsList);
+        }
 
-    [Conditional("DEBUG")]
-    internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
-    {
-      returnNumberOfBalls(BallsList.Count);
-    }
+        [Conditional("DEBUG")]
+        internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
+        {
+            returnNumberOfBalls(BallsList.Count);
+        }
 
-    [Conditional("DEBUG")]
-    internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
-    {
-      returnInstanceDisposed(Disposed);
-    }
+        [Conditional("DEBUG")]
+        internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
+        {
+            returnInstanceDisposed(Disposed);
+        }
 
         #endregion TestingInfrastructure
     }
