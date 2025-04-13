@@ -32,5 +32,22 @@ namespace TP.ConcurrentProgramming.Data.Test
       Assert.AreEqual<int>(1, numberOfCallBackCalled);
       Assert.AreEqual<IVector>(initialPosition, curentPosition);
     }
-  }
+    [TestMethod]
+    public void BallMovementConsistencyTest()
+    {
+        Vector pozycja = new Vector(10.0, 10.0);
+        Vector predkosc = new Vector(2.0, 3.0);
+        Ball kulka = new Ball(pozycja, predkosc);
+
+        IVector updatedPosition = null;
+        kulka.NewPositionNotification += (sender, position) => updatedPosition = position;
+
+        kulka.Move(predkosc);
+
+        Assert.IsNotNull(updatedPosition, "Update sie nie udal");
+        Assert.AreEqual(12.0, updatedPosition.x, "Pozcja X niepoprawnie sie aktualizuje");
+        Assert.AreEqual(13.0, updatedPosition.y, "Pozcja Y niepoprawnie sie aktualizuje");
+    }
+
+    }
 }
