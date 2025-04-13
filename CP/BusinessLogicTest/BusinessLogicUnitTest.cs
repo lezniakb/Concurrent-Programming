@@ -60,9 +60,51 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       }
     }
 
-    #region testing instrumentation
+    [TestMethod]
+    public void zweryfikujInit()
+    {
+        DataLayerStartFixcure dataLayerFixcure = new();
+        using (BusinessLogicImplementation newInstance = new(dataLayerFixcure))
+        {
+            int kulki = 5;
+            newInstance.Start(kulki, (position, ball) =>
+            {
 
-    private class DataLayerConstructorFixcure : Data.DataAbstractAPI
+                Assert.IsNotNull(position, "Pozycja nie moze byc null");
+                Assert.IsNotNull(ball, "Kulka nie moze byc null");
+                Assert.IsTrue(position.x >= 0, "Pozycja X jest nieprawidlowa");
+                Assert.IsTrue(position.y >= 0, "Pozycja Y jest nieprawidlowa");
+            });
+            Assert.IsTrue(dataLayerFixcure.StartCalled, "Start nie zostal wezwany przy implementacji Data");
+            Assert.AreEqual(kulki, dataLayerFixcure.NumberOfBallseCreated, "Ilosc kulek w wartswie Data jest nieprawidlowa.");
+        }
+    }
+    [TestMethod]
+    public void zweryfikujDisposal()
+    {
+        DataLayerDisposeFixcure disposeFixcure = new();
+        BusinessLogicImplementation instancja = new(disposeFixcure);
+
+        // Verify initial state
+        Assert.IsFalse(disposeFixcure.Disposed, "Poczatkowo warstwa data nie powinna byc disposed");
+        bool czyDisposed = false;
+        instancja.CheckObjectDisposed(x => czyDisposed = x);
+        Assert.IsFalse(czyDisposed, "Bussiness logic implementation nie powinna byc disposed");
+        instancja.Dispose();
+        // sprawdz stan obiektu
+        instancja.CheckObjectDisposed(x => czyDisposed = x);
+        Assert.IsTrue(czyDisposed, "Bussiness logic implementation powinna byc disposed");
+        Assert.IsTrue(disposeFixcure.Disposed, "warstwa data powinna byc disposed");
+
+        // Verify that further operations throw exceptions
+        Assert.ThrowsException<ObjectDisposedException>(() => instancja.Dispose(), "dispose powinien rzucic wyjatek");
+        Assert.ThrowsException<ObjectDisposedException>(() => instancja.Start(0, (position, ball) => { }), "start powinien rzucic wyjatek po dispose");
+    }
+
+
+        #region testing instrumentation
+
+        private class DataLayerConstructorFixcure : Data.DataAbstractAPI
     {
       public override void Dispose()
       { }
