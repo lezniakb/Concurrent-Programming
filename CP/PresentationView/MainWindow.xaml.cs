@@ -25,10 +25,12 @@ namespace TP.ConcurrentProgramming.PresentationView
       MainWindowViewModel viewModel = (MainWindowViewModel)DataContext;
       double screenWidth = SystemParameters.PrimaryScreenWidth;
       double screenHeight = SystemParameters.PrimaryScreenHeight;
+            
 
       // definiuj ile ma byc kulek - numberOfBalls - liczba kul
       viewModel.Start(0);
-    }
+            viewModel.SetScreenSize(screenWidth * 0.6, screenHeight * 0.6);
+        }
 
     /// <summary>
     /// Raises the <seealso cref="System.Windows.Window.Closed"/> event.

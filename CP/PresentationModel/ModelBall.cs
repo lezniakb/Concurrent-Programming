@@ -66,11 +66,13 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
     private double TopBackingField;
     private double LeftBackingField;
-    const double scalingFactor = 1.5;
+    //const double scalingFactor = 1.5;
     private void NewPositionNotification(object sender, IPosition e)
     {
-        Top = e.y * scalingFactor;
-        Left = e.x * scalingFactor;
+        Top = e.y;
+        Left = e.x;
+        //Top = e.y * scalingFactor;
+        //Left = e.x * scalingFactor;
     }
 
     private void RaisePropertyChanged([CallerMemberName] string propertyName = "")

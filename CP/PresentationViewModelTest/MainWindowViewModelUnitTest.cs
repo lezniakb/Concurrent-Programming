@@ -75,7 +75,12 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
         Disposed++;
       }
 
-      public override void Start(int numberOfBalls)
+            public override void SetScreenSize(double width, double height)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Start(int numberOfBalls)
       {
         Started = numberOfBalls;
       }
@@ -137,11 +142,16 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
         Disposed = true;
       }
 
-      #endregion ModelAbstractApi
+            public override void SetScreenSize(double width, double height)
+            {
+                throw new NotImplementedException();
+            }
 
-      #region API
+            #endregion ModelAbstractApi
 
-      public event EventHandler<BallChaneEventArgs> BallChanged;
+            #region API
+
+            public event EventHandler<BallChaneEventArgs> BallChanged;
 
       #endregion API
 

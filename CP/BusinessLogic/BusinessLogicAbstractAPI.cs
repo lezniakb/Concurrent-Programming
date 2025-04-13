@@ -46,20 +46,26 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         // statyczna zmienna (prywatna) która tworzy instancję Business Logic Implementation
     private static Lazy<BusinessLogicAbstractAPI> modelInstance = new Lazy<BusinessLogicAbstractAPI>(() => new BusinessLogicImplementation());
 
-    #endregion private
-  }
-  /// <summary>
-  /// Immutable type representing table dimensions
-  /// </summary>
-  /// <param name="BallDimension"></param>
-  /// <param name="TableHeight"></param>
-  /// <param name="TableWidth"></param>
-  /// <remarks>
-  /// Must be abstract
-  /// </remarks>
-  /// 
-  //niemodyfikowalny rekord z wpisanymi wymiarami kulki i wysokosci "okna"
-  public record Dimensions(double BallDimension, double TableHeight, double TableWidth);
+        #endregion private
+
+        #region public
+
+        public abstract void SetScreenSize(double width, double height);
+
+        #endregion public
+    }
+    /// <summary>
+    /// Immutable type representing table dimensions
+    /// </summary>
+    /// <param name="BallDimension"></param>
+    /// <param name="TableHeight"></param>
+    /// <param name="TableWidth"></param>
+    /// <remarks>
+    /// Must be abstract
+    /// </remarks>
+    /// 
+    //niemodyfikowalny rekord z wpisanymi wymiarami kulki i wysokosci "okna"
+    public record Dimensions(double BallDimension, double TableHeight, double TableWidth);
     
     public interface IPosition
   {

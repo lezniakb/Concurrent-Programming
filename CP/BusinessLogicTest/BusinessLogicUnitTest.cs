@@ -109,7 +109,12 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       public override void Dispose()
       { }
 
-      public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
+            public override void SetScreenSize(double width, double height)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
       {
         throw new NotImplementedException();
       }
@@ -124,7 +129,12 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
         Disposed = true;
       }
 
-      public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
+            public override void SetScreenSize(double width, double height)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
       {
         throw new NotImplementedException();
       }
@@ -145,7 +155,12 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
         upperLayerHandler(new DataVectorFixture(), new DataBallFixture());
       }
 
-      private record DataVectorFixture : Data.IVector
+            public override void SetScreenSize(double width, double height)
+            {
+                throw new NotImplementedException();
+            }
+
+            private record DataVectorFixture : Data.IVector
       {
         public double x { get; init; }
         public double y { get; init; }

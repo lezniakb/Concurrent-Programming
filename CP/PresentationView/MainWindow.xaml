@@ -37,7 +37,16 @@
                     Command="{Binding CreateBallsCommand}" 
                     Margin="6,0,0,0"/>
         </StackPanel>
-        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" Margin="35">
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" 
+                
+                        Width="{Binding Source={x:Static SystemParameters.PrimaryScreenWidth},
+                        Converter={StaticResource MultiplyConverter},
+                        ConverterParameter=0.6}"
+        Height="{Binding Source={x:Static SystemParameters.PrimaryScreenHeight},
+                         Converter={StaticResource MultiplyConverter},
+                         ConverterParameter=0.6}"
+                
+                >
             <ItemsControl ItemsSource="{Binding Balls}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

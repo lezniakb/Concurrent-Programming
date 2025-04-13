@@ -91,10 +91,20 @@ namespace TP.ConcurrentProgramming.Presentation.Model
       returnBallChangedIsNull(BallChanged == null);
     }
 
-    #endregion TestingInfrastructure
-  }
+        #endregion TestingInfrastructure
 
-  public class BallChaneEventArgs : EventArgs
+        #region public
+
+        public override void SetScreenSize(double width, double height)
+        {
+            layerBellow?.SetScreenSize(width, height);
+        }
+
+
+        #endregion public
+    }
+
+    public class BallChaneEventArgs : EventArgs
   {
     public IBall Ball { get; init; }
   }

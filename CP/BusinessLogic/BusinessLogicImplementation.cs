@@ -74,6 +74,15 @@ namespace TP.ConcurrentProgramming.BusinessLogic
       returnInstanceDisposed(Disposed);
     }
 
-    #endregion TestingInfrastructure
-  }
+        #endregion TestingInfrastructure
+
+        #region public
+
+        public override void SetScreenSize(double width, double height)
+        {
+            layerBellow?.SetScreenSize(width, height);
+        }
+
+        #endregion public
+    }
 }

@@ -15,9 +15,9 @@ namespace TP.ConcurrentProgramming.Data
 {
   internal class DataImplementation : DataAbstractAPI
   {
-    #region ctor
+        #region ctor
 
-    public DataImplementation()
+        public DataImplementation()
     {
       MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
     }
@@ -35,7 +35,7 @@ namespace TP.ConcurrentProgramming.Data
       Random random = new Random();
       for (int i = 0; i < numberOfBalls; i++)
       {
-        Vector startingPosition = new(random.Next(100, 1000 - 100), random.Next(50, 530 - 50));
+        Vector startingPosition = new(random.Next((int)(screenWidth * 0.1), screenWidth - (int)(screenWidth * 0.1)), random.Next((int)(screenHeight * 0.1), screenHeight - (int)(screenHeight * 0.1)));
         //Vector startingPosition = new(random.Next(19, 20), random.Next(19, 20));
                 //Vector startingPosition = new(0, 0);
                 Ball newBall = new(startingPosition, startingPosition);
@@ -43,12 +43,17 @@ namespace TP.ConcurrentProgramming.Data
         BallsList.Add(newBall);
       }
     }
+        public override void SetScreenSize(double width, double height)
+        {
+            screenWidth = (int)width;
+            screenHeight = (int)height;
+        }
 
-    #endregion DataAbstractAPI
+        #endregion DataAbstractAPI
 
-    #region IDisposable
+        #region IDisposable
 
-    protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
     {
       if (!Disposed)
       {
@@ -70,12 +75,15 @@ namespace TP.ConcurrentProgramming.Data
       GC.SuppressFinalize(this);
     }
 
-    #endregion IDisposable
+        #endregion IDisposable
 
-    #region private
+        #region private
 
-    //private bool disposedValue;
-    private bool Disposed = false;
+        private int screenWidth;
+        private int screenHeight;
+
+        //private bool disposedValue;
+        private bool Disposed = false;
 
     private readonly Timer MoveTimer;
     private Random RandomGenerator = new();
@@ -99,13 +107,13 @@ namespace TP.ConcurrentProgramming.Data
         // Jeśli kula wyjdzie poza obszar, odbij ją
         // Punktem odniesienia obiektu jest lewy górny róg
 
-        if (positionY < 0 || positionY > 530 - diameter)
+        if (positionY < 0 || positionY > screenHeight - diameter)
         {
             // Zmiana kierunku na przeciwny, jeśli kula jest poza dolną lub górną krawędzią
             deltaY = -deltaY;  // Odbicie w osi Y
         }
 
-        if (positionX < 0 || positionX > 1000 - diameter)
+        if (positionX < 0 || positionX > screenWidth - diameter)
         {
             // Zmiana kierunku na przeciwny, jeśli kula jest poza lewą lub prawą krawędzią
             deltaX = -deltaX;  // Odbicie w osi X
@@ -121,11 +129,11 @@ namespace TP.ConcurrentProgramming.Data
             */
         }
 
-    #endregion private
+        #endregion private
 
-    #region TestingInfrastructure
+        #region TestingInfrastructure
 
-    [Conditional("DEBUG")]
+        [Conditional("DEBUG")]
     internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
     {
       returnBallsList(BallsList);
@@ -143,6 +151,6 @@ namespace TP.ConcurrentProgramming.Data
       returnInstanceDisposed(Disposed);
     }
 
-    #endregion TestingInfrastructure
-  }
+        #endregion TestingInfrastructure
+    }
 }

@@ -42,10 +42,15 @@ namespace TP.ConcurrentProgramming.Data
         // uzycie klasy Lazy, ktora sprawia ze instancja jest tworzona gdy program probuje sie odwolac do modelInstance.
     private static Lazy<DataAbstractAPI> modelInstance = new Lazy<DataAbstractAPI>(() => new DataImplementation());
 
-    #endregion private
-  }
+        #endregion private
 
-  public interface IVector
+        #region public
+        public abstract void SetScreenSize(double width, double height);
+
+        #endregion public
+    }
+
+    public interface IVector
   {
     /// <summary>
     /// The X component of the vector.

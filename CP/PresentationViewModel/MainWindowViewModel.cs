@@ -91,5 +91,14 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
         private int _initialBallsNumber;
 
         #endregion private
+
+        #region public
+
+        public void SetScreenSize(double width, double height)
+        {
+            ModelLayer?.SetScreenSize(width, height);
+        }
+
+        #endregion public
     }
 }
