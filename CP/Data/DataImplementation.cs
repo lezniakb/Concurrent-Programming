@@ -102,8 +102,8 @@ namespace TP.ConcurrentProgramming.Data
         private Random RandomGenerator = new();
         private List<Ball> BallsList = new();
 
-        // srednica kulki
-        private const double BallDiameter = 20.0;
+        // srednica kulki widziana ze strony logicznej != wyswietlana)
+        private const double BallDiameter = 40.0;
 
         /// <summary>
         /// Metoda wywoływana przy każdym takcie timera.
