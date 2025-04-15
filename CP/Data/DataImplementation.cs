@@ -66,8 +66,6 @@ namespace TP.ConcurrentProgramming.Data
                 // tworzenie kulki z ustalona pozycja i predkoscia
                 Ball newBall = new Ball(startingPosition, velocity);
                 upperLayerHandler(startingPosition, newBall);
-                // dodano lock, ktory gwarantuje, ze operacje na liscie kulek sa synchroniczne
-                // programowanie wspolbiezne
                 lock (_lock)
                 {
                     BallsList.Add(newBall);
@@ -132,8 +130,6 @@ namespace TP.ConcurrentProgramming.Data
         /// </summary>
         private void Move(object? state)
         {
-            // dodano lock, ktory gwarantuje, ze operacje na liscie kulek sa synchroniczne
-            // programowanie wspolbiezne
             lock (_lock)
             {
 
@@ -186,8 +182,73 @@ namespace TP.ConcurrentProgramming.Data
 
                     // wywolanie Move ktore przesuwa kulke
                     ballCurrent.Move(delta);
+
+                    // sprawdz czy kulka wchodzi w kolizje z innymi kulkami
+                    for (int j = i + 1; j < BallsList.Count; j++)
+                    {
+                        Ball ballNext = BallsList[j];
+                        HandleBallCollision(ballCurrent, ballNext);
+                    }
                 }
             }   
+        }
+        private void HandleBallCollision(Ball ballFirst, Ball ballNext)
+        {
+            // odbierz pozycje i predkosc obu kulek
+            IVector pos1 = ballFirst.getPosition;
+            IVector pos2 = ballNext.getPosition;
+            IVector vel1 = ballFirst.Velocity;
+            IVector vel2 = ballNext.Velocity;
+
+            // oblicz dystans na plaszczyznie kartezjanskiej miedzy kulkami
+            double dx = pos2.x - pos1.x;
+            double dy = pos2.y - pos1.y;
+            double distance = Math.Sqrt(dx * dx + dy * dy);
+
+            // jestli kulki sie zderzaja
+            if (distance < BallDiameter)
+            {
+                // oblicz ich masy (na podstawie ustawionej srednicy)
+                double mass1 = CalculateMass(BallDiameter);
+                double mass2 = CalculateMass(BallDiameter);
+                double nx = dx / distance;
+                double ny = dy / distance;
+
+                // oblicz wzgledna predkosc miedzy dwoma kulkami
+                double dvx = vel2.x - vel1.x;
+                double dvy = vel2.y - vel1.y;
+
+                // oblicz predkosc na wektorze kolizji
+                double dotProduct = dvx * nx + dvy * ny;
+
+                // jesli kulki sie od siebie oddalaja to zakoncz
+                if (dotProduct > 0)
+                    return;
+
+                // oblicz iloczyn skalarny impulsu miedzy dwoma kulkami
+                double impulse = (2 * dotProduct) / (mass1 + mass2);
+
+                // zaktualizuj predkosci obu kulek na podstawie tego impulsu
+                double impulsedBallOneX = vel1.x + impulse * mass2 * nx;
+                double impulsedBallOneY = vel1.y + impulse * mass2 * ny;
+
+                double impulsedBallTwoX = vel2.x - impulse * mass1 * nx;
+                double impulsedBallTwoY = vel2.y - impulse * mass1 * ny;
+
+                vel1 = new Vector(impulsedBallOneX, impulsedBallOneY);
+                vel2 = new Vector(impulsedBallTwoX, impulsedBallTwoY);
+
+                // przydziel odpowiednie predkosci tym kulkom
+                ballFirst.Velocity = vel1;
+                ballNext.Velocity = vel2;
+
+                // uniknij nakladanie sie kulek na siebie
+                double overlap = BallDiameter - distance;
+                double separationX = nx * overlap / 2;
+                double separationY = ny * overlap / 2;
+                ballFirst.Move(new Vector(-separationX, -separationY));
+                ballNext.Move(new Vector(separationX, separationY));
+            }
         }
 
         #endregion private
