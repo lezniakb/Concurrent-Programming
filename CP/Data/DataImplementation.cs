@@ -17,6 +17,18 @@ namespace TP.ConcurrentProgramming.Data
 {
     internal class DataImplementation : DataAbstractAPI
     {
+        #region fields
+        private int screenWidth;
+        private int screenHeight;
+
+        private bool Disposed = false;
+
+        private readonly Timer MoveTimer;
+        private Random RandomGenerator = new();
+        private List<Ball> BallsList = new();
+        private readonly object _lock = new object();
+
+        #endregion Fields
         #region ctor
 
         public DataImplementation()
@@ -54,7 +66,12 @@ namespace TP.ConcurrentProgramming.Data
                 // tworzenie kulki z ustalona pozycja i predkoscia
                 Ball newBall = new Ball(startingPosition, velocity);
                 upperLayerHandler(startingPosition, newBall);
-                BallsList.Add(newBall);
+                // dodano lock, ktory gwarantuje, ze operacje na liscie kulek sa synchroniczne
+                // programowanie wspolbiezne
+                lock (_lock)
+                {
+                    BallsList.Add(newBall);
+                }
             }
         }
 
@@ -93,15 +110,6 @@ namespace TP.ConcurrentProgramming.Data
 
         #region private
 
-        private int screenWidth;
-        private int screenHeight;
-
-        private bool Disposed = false;
-
-        private readonly Timer MoveTimer;
-        private Random RandomGenerator = new();
-        private List<Ball> BallsList = new();
-
         // srednica kulki widziana ze strony logicznej != wyswietlana)
         private const double BallDiameter = 40.0;
 
@@ -124,51 +132,62 @@ namespace TP.ConcurrentProgramming.Data
         /// </summary>
         private void Move(object? state)
         {
-            foreach (Ball item in BallsList)
+            // dodano lock, ktory gwarantuje, ze operacje na liscie kulek sa synchroniczne
+            // programowanie wspolbiezne
+            lock (_lock)
             {
-                // pobierz obecna pozycje i predkosc
-                double posX = item.getPosition.x;
-                double posY = item.getPosition.y;
-                double predkoscX = item.Velocity.x;
-                double predkoscY = item.Velocity.y;
 
-                // oblicz nowa pozycje
-                double positionX = posX + predkoscX;
-                double positionY = posY + predkoscY;
-
-                // sprawdz czy nie uderza w sciane boczna
-                if (positionX < 0)
+                for (int i = 0; i < BallsList.Count; i++)
                 {
-                    positionX = 0;
-                    predkoscX = -predkoscX;
-                }
-                else if (positionX > screenWidth - BallDiameter)
-                {
-                    positionX = screenWidth - BallDiameter;
-                    predkoscX = -predkoscX;
-                }
+                    Ball ballCurrent = BallsList[i];
+                    // pobierz obecna pozycje i predkosc
+                    double posX = ballCurrent.getPosition.x;
+                    double posY = ballCurrent.getPosition.y;
+                    double predkoscX = ballCurrent.Velocity.x;
+                    double predkoscY = ballCurrent.Velocity.y;
 
-                // sprawdz czy nie uderza w sufit
-                if (positionY < 0)
-                {
-                    positionY = 0;
-                    predkoscY = -predkoscY;
-                }
-                else if (positionY > screenHeight - BallDiameter)
-                {
-                    positionY = screenHeight - BallDiameter;
-                    predkoscY = -predkoscY;
-                }
+                    // oblicz nowa pozycje
+                    double positionX = posX + predkoscX;
+                    double positionY = posY + predkoscY;
 
-                // aktualizacja predkosci jesli zostala odwrocona
-                item.Velocity = new Vector(predkoscX, predkoscY);
+                    // sprawdz czy nie uderza w sciane boczna
+                    if (positionX < 0)
+                    {
+                        positionX = 0;
+                        predkoscX = -predkoscX;
+                    }
+                    else if (positionX > screenWidth - BallDiameter)
+                    {
+                        positionX = screenWidth - BallDiameter;
+                        predkoscX = -predkoscX;
+                    }
 
-                // obliczenie delty, czyli przesuniecia
-                double deltaX = positionX - posX;
-                double deltaY = positionY - posY;
-                // wywolanie Move ktore przesuwa kulke
-                item.Move(new Vector(deltaX, deltaY));
-            }
+                    // sprawdz czy nie uderza w sufit
+                    if (positionY < 0)
+                    {
+                        positionY = 0;
+                        predkoscY = -predkoscY;
+                    }
+                    else if (positionY > screenHeight - BallDiameter)
+                    {
+                        positionY = screenHeight - BallDiameter;
+                        predkoscY = -predkoscY;
+                    }
+
+                    // aktualizacja predkosci jesli zostala odwrocona
+                    ballCurrent.Velocity = new Vector(predkoscX, predkoscY);
+
+                    // obliczenie delty, czyli przesuniecia
+                    double deltaX = positionX - posX;
+                    double deltaY = positionY - posY;
+
+                    // zapisz przesuniecie w wektorze
+                    Vector delta = new Vector(deltaX, deltaY);
+
+                    // wywolanie Move ktore przesuwa kulke
+                    ballCurrent.Move(delta);
+                }
+            }   
         }
 
         #endregion private
