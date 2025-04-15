@@ -106,6 +106,18 @@ namespace TP.ConcurrentProgramming.Data
         private const double BallDiameter = 40.0;
 
         /// <summary>
+        /// Metoda pomocnicza do obliczania masy kulki.
+        /// Masa kulki zalezna jest od srednicy kulki. 
+        /// Przyjmujemy, ze masa jest rowna srednicy do potegi 2.
+        /// </summary>
+        private double CalculateMass(double diameter)
+        {
+            double mass = 0;
+            mass = (double)Math.Pow(diameter, 2);
+            return mass;
+        }
+
+        /// <summary>
         /// Metoda wywoływana przy każdym takcie timera.
         /// Przemieszcza każdą kulkę zgodnie z jej prędkością,
         /// odwracając kierunek ruchu, gdy kulka napotka brzeg ekranu.
