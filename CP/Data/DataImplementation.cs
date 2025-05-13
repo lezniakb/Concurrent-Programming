@@ -22,8 +22,8 @@ namespace TP.ConcurrentProgramming.Data
         private int screenHeight;
 
         private bool Disposed = false;
+        private readonly List<Thread> BallThreads = new();
 
-        private readonly Timer MoveTimer;
         private Random RandomGenerator = new();
         private List<Ball> BallsList = new();
         private readonly object _lock = new object();
@@ -33,8 +33,6 @@ namespace TP.ConcurrentProgramming.Data
 
         public DataImplementation()
         {
-            // Ustawiamy timer, który wywołuje metodę Move co 16 ms (~60 FPS).
-            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
         }
 
         #endregion ctor
@@ -49,29 +47,34 @@ namespace TP.ConcurrentProgramming.Data
                 throw new ArgumentNullException(nameof(upperLayerHandler));
 
             Random random = new Random();
+
             for (int i = 0; i < numberOfBalls; i++)
             {
-                // pozycja poczatkowa, musi byc w obrebie min 10% od marginesu
                 Vector startingPosition = new Vector(
-                  random.Next((int)(screenWidth * 0.1), screenWidth - (int)(screenWidth * 0.1)),
-                  random.Next((int)(screenHeight * 0.1), screenHeight - (int)(screenHeight * 0.1))
+                    random.Next((int)(screenWidth * 0.1), screenWidth - (int)(screenWidth * 0.1)),
+                    random.Next((int)(screenHeight * 0.1), screenHeight - (int)(screenHeight * 0.1))
                 );
 
-                // podstawowa predkosc kulek
                 Vector velocity = new Vector(
-                  (random.NextDouble() - 0.5) * 6,
-                  (random.NextDouble() - 0.5) * 6
+                    (random.NextDouble() - 0.5) * 6,
+                    (random.NextDouble() - 0.5) * 6
                 );
 
-                // tworzenie kulki z ustalona pozycja i predkoscia
                 Ball newBall = new Ball(startingPosition, velocity);
                 upperLayerHandler(startingPosition, newBall);
+
                 lock (_lock)
                 {
                     BallsList.Add(newBall);
                 }
+
+                var worker = new BallWorker(newBall, screenWidth, screenHeight, BallDiameter, _lock, BallsList, () => Disposed);
+                Thread thread = new Thread(worker.Run);
+                BallThreads.Add(thread);
+                thread.Start();
             }
         }
+
 
         public override void SetScreenSize(double width, double height)
         {
@@ -89,14 +92,18 @@ namespace TP.ConcurrentProgramming.Data
             {
                 if (disposing)
                 {
-                    MoveTimer.Dispose();
+                    Disposed = true;
+
+                    foreach (var thread in BallThreads)
+                        thread.Join();
+
                     BallsList.Clear();
                 }
-                Disposed = true;
             }
             else
                 throw new ObjectDisposedException(nameof(DataImplementation));
         }
+
 
         public override void Dispose()
         {
@@ -110,146 +117,117 @@ namespace TP.ConcurrentProgramming.Data
 
         // srednica kulki widziana ze strony logicznej != wyswietlana)
         private const double BallDiameter = 40.0;
+        
 
-        /// <summary>
-        /// Metoda pomocnicza do obliczania masy kulki.
-        /// Masa kulki zalezna jest od srednicy kulki. 
-        /// Przyjmujemy, ze masa jest rowna srednicy do potegi 2.
-        /// </summary>
-        private double CalculateMass(double diameter)
+        private class BallWorker
         {
-            double mass = 0;
-            mass = (double)Math.Pow(diameter, 2);
-            return mass;
-        }
+            private readonly Ball _ball;
+            private readonly int _screenWidth;
+            private readonly int _screenHeight;
+            private readonly double _ballDiameter;
+            private readonly object _lock;
+            private readonly List<Ball> _ballsList;
+            private readonly Func<bool> _isDisposed;
 
-        /// <summary>
-        /// Metoda wywoływana przy każdym takcie timera.
-        /// Przemieszcza każdą kulkę zgodnie z jej prędkością,
-        /// odwracając kierunek ruchu, gdy kulka napotka brzeg ekranu.
-        /// </summary>
-        private void Move(object? state)
-        {
-            lock (_lock)
+            public BallWorker(Ball ball, int screenWidth, int screenHeight, double ballDiameter, object lockObject, List<Ball> ballsList, Func<bool> isDisposed)
             {
+                _ball = ball;
+                _screenWidth = screenWidth;
+                _screenHeight = screenHeight;
+                _ballDiameter = ballDiameter;
+                _lock = lockObject;
+                _ballsList = ballsList;
+                _isDisposed = isDisposed;
+            }
 
-                for (int i = 0; i < BallsList.Count; i++)
+            public void Run()
+            {
+                while (!_isDisposed())
                 {
-                    Ball ballCurrent = BallsList[i];
-                    // pobierz obecna pozycje i predkosc
-                    double posX = ballCurrent.getPosition.x;
-                    double posY = ballCurrent.getPosition.y;
-                    double predkoscX = ballCurrent.Velocity.x;
-                    double predkoscY = ballCurrent.Velocity.y;
-
-                    // oblicz nowa pozycje
-                    double positionX = posX + predkoscX;
-                    double positionY = posY + predkoscY;
-
-                    // sprawdz czy nie uderza w sciane boczna
-                    if (positionX < 0)
+                    lock (_lock)
                     {
-                        positionX = 0;
-                        predkoscX = -predkoscX;
+                        UpdatePosition();
+                        HandleCollisions();
                     }
-                    else if (positionX > screenWidth - BallDiameter)
+                    Thread.Sleep(16);
+                }
+            }
+
+            private void UpdatePosition()
+            {
+                double posX = _ball.getPosition.x;
+                double posY = _ball.getPosition.y;
+                double velX = _ball.Velocity.x;
+                double velY = _ball.Velocity.y;
+
+                double newX = posX + velX;
+                double newY = posY + velY;
+
+                if (newX < 0 || newX > _screenWidth - _ballDiameter)
+                {
+                    velX = -velX;
+                    newX = Math.Clamp(newX, 0, _screenWidth - _ballDiameter);
+                }
+
+                if (newY < 0 || newY > _screenHeight - _ballDiameter)
+                {
+                    velY = -velY;
+                    newY = Math.Clamp(newY, 0, _screenHeight - _ballDiameter);
+                }
+
+                _ball.Velocity = new Vector(velX, velY);
+                Vector delta = new Vector(newX - posX, newY - posY);
+                _ball.Move(delta);
+            }
+
+            private void HandleCollisions()
+            {
+                foreach (var other in _ballsList)
+                {
+                    if (other == _ball)
+                        continue;
+                    double dx = other.getPosition.x - _ball.getPosition.x;
+                    double dy = other.getPosition.y - _ball.getPosition.y;
+                    double distance = Math.Sqrt(dx * dx + dy * dy);
+
+                    if (distance < _ballDiameter)
                     {
-                        positionX = screenWidth - BallDiameter;
-                        predkoscX = -predkoscX;
-                    }
+                        double mass1 = Math.Pow(_ballDiameter, 2);
+                        double mass2 = Math.Pow(_ballDiameter, 2);
+                        double nx = dx / distance;
+                        double ny = dy / distance;
 
-                    // sprawdz czy nie uderza w sufit
-                    if (positionY < 0)
-                    {
-                        positionY = 0;
-                        predkoscY = -predkoscY;
-                    }
-                    else if (positionY > screenHeight - BallDiameter)
-                    {
-                        positionY = screenHeight - BallDiameter;
-                        predkoscY = -predkoscY;
-                    }
+                        double dvx = other.Velocity.x - _ball.Velocity.x;
+                        double dvy = other.Velocity.y - _ball.Velocity.y;
 
-                    // aktualizacja predkosci jesli zostala odwrocona
-                    ballCurrent.Velocity = new Vector(predkoscX, predkoscY);
+                        double dotProduct = dvx * nx + dvy * ny;
 
-                    // obliczenie delty, czyli przesuniecia
-                    double deltaX = positionX - posX;
-                    double deltaY = positionY - posY;
+                        if (dotProduct > 0) return;
 
-                    // zapisz przesuniecie w wektorze
-                    Vector delta = new Vector(deltaX, deltaY);
+                        double impulse = (2 * dotProduct) / (mass1 + mass2);
 
-                    // wywolanie Move ktore przesuwa kulke
-                    ballCurrent.Move(delta);
+                        Vector vel1 = new Vector(
+                            _ball.Velocity.x + impulse * mass2 * nx,
+                            _ball.Velocity.y + impulse * mass2 * ny);
 
-                    // sprawdz czy kulka wchodzi w kolizje z innymi kulkami
-                    for (int j = i + 1; j < BallsList.Count; j++)
-                    {
-                        Ball ballNext = BallsList[j];
-                        HandleBallCollision(ballCurrent, ballNext);
+                        Vector vel2 = new Vector(
+                            other.Velocity.x - impulse * mass1 * nx,
+                            other.Velocity.y - impulse * mass1 * ny);
+
+                        _ball.Velocity = vel1;
+                        other.Velocity = vel2;
+
+                        double overlap = _ballDiameter - distance;
+                        double separationX = nx * overlap / 2;
+                        double separationY = ny * overlap / 2;
+
+                        _ball.Move(new Vector(-separationX, -separationY));
+                        other.Move(new Vector(separationX, separationY));
                     }
                 }
-            }   
-        }
-        private void HandleBallCollision(Ball ballFirst, Ball ballNext)
-        {
-            // odbierz pozycje i predkosc obu kulek
-            IVector pos1 = ballFirst.getPosition;
-            IVector pos2 = ballNext.getPosition;
-            IVector vel1 = ballFirst.Velocity;
-            IVector vel2 = ballNext.Velocity;
-
-            // oblicz dystans na plaszczyznie kartezjanskiej miedzy kulkami
-            double dx = pos2.x - pos1.x;
-            double dy = pos2.y - pos1.y;
-            double distance = Math.Sqrt(dx * dx + dy * dy);
-
-            // jestli kulki sie zderzaja
-            if (distance < BallDiameter)
-            {
-                // oblicz ich masy (na podstawie ustawionej srednicy)
-                double mass1 = CalculateMass(BallDiameter);
-                double mass2 = CalculateMass(BallDiameter);
-                double nx = dx / distance;
-                double ny = dy / distance;
-
-                // oblicz wzgledna predkosc miedzy dwoma kulkami
-                double dvx = vel2.x - vel1.x;
-                double dvy = vel2.y - vel1.y;
-
-                // oblicz predkosc na wektorze kolizji
-                double dotProduct = dvx * nx + dvy * ny;
-
-                // jesli kulki sie od siebie oddalaja to zakoncz
-                if (dotProduct > 0)
-                    return;
-
-                // oblicz iloczyn skalarny impulsu miedzy dwoma kulkami
-                double impulse = (2 * dotProduct) / (mass1 + mass2);
-
-                // zaktualizuj predkosci obu kulek na podstawie tego impulsu
-                double impulsedBallOneX = vel1.x + impulse * mass2 * nx;
-                double impulsedBallOneY = vel1.y + impulse * mass2 * ny;
-
-                double impulsedBallTwoX = vel2.x - impulse * mass1 * nx;
-                double impulsedBallTwoY = vel2.y - impulse * mass1 * ny;
-
-                vel1 = new Vector(impulsedBallOneX, impulsedBallOneY);
-                vel2 = new Vector(impulsedBallTwoX, impulsedBallTwoY);
-
-                // przydziel odpowiednie predkosci tym kulkom
-                ballFirst.Velocity = vel1;
-                ballNext.Velocity = vel2;
-
-                // uniknij nakladanie sie kulek na siebie
-                double overlap = BallDiameter - distance;
-                double separationX = nx * overlap / 2;
-                double separationY = ny * overlap / 2;
-                ballFirst.Move(new Vector(-separationX, -separationY));
-                ballNext.Move(new Vector(separationX, separationY));
             }
         }
+
 
         #endregion private
 
