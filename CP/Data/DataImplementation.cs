@@ -63,10 +63,7 @@ namespace TP.ConcurrentProgramming.Data
                 Ball newBall = new Ball(startingPosition, velocity);
                 upperLayerHandler(startingPosition, newBall);
 
-                lock (_lock)
-                {
-                    BallsList.Add(newBall);
-                }
+                BallsList.Add(newBall);
 
                 var worker = new BallWorker(newBall, screenWidth, screenHeight, BallDiameter, _lock, BallsList, () => Disposed);
                 Thread thread = new Thread(worker.Run);
