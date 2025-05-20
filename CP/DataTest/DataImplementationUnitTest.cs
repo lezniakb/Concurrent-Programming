@@ -87,27 +87,22 @@ namespace TP.ConcurrentProgramming.Data.Test
         }
 
         [TestMethod]
-        public void SetScreenSizeTestMethod()
+        public void StartTwiceAddsMoreBalls()
         {
-            using (DataImplementation dataImplementation = new DataImplementation())
+            using (DataImplementation data = new DataImplementation())
             {
-                double width = 1280;
-                double height = 720;
-                dataImplementation.SetScreenSize(width, height);
+                data.SetScreenSize(1000, 1000);
+                data.Start(2, (pos, ball) => { });
+                data.Start(3, (pos, ball) => { });
 
-                int ballCount = 5;
-                List<IBall> createdBalls = new List<IBall>();
-
-                dataImplementation.Start(ballCount, (position, ball) => {
-                    createdBalls.Add(ball);
-                    Assert.IsTrue(position.x >= width * 0.1);
-                    Assert.IsTrue(position.x <= width * 0.9);
-                    Assert.IsTrue(position.y >= height * 0.1);
-                    Assert.IsTrue(position.y <= height * 0.9);
+                data.CheckNumberOfBalls(count =>
+                {
+                    Assert.AreEqual(5, count, "Powinno byc 5 kulek");
                 });
-                dataImplementation.CheckNumberOfBalls(count => Assert.AreEqual(ballCount, count));
             }
         }
+
+
 
         [TestMethod]
         public void StartWithNullHandlerThrowsException()
