@@ -166,14 +166,23 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
         public double y { get; init; }
       }
 
-      private class DataBallFixture : Data.IBall
-      {
-        public IVector Velocity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        private class DataBallFixture : Data.IBall
+        {
+            public Data.IVector Velocity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public event EventHandler<Data.IVector>? NewPositionNotification = null;
 
-        public event EventHandler<IVector>? NewPositionNotification = null;
-      }
+            // Implementing missing interface members
+            public int Id => 1;
+
+            // Implemented as a property, not a method
+            public Data.IVector getPosition
+            {
+                get { return new DataVectorFixture(); }
+            }
+        }
+
+        }
+
+        #endregion testing instrumentation
     }
-
-    #endregion testing instrumentation
-  }
 }
