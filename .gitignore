@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # MAC ds_store
 DS_Store
+
+# wylaczenie danych diagnostycznych z repo
+DaneDiagnostyczne.txt
