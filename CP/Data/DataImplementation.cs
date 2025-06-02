@@ -89,7 +89,7 @@ namespace TP.ConcurrentProgramming.Data
             }
 
             // Inicjalizacja timera - jeden timer na cały zestaw kulek
-            directionChangeTimer = new System.Timers.Timer(10000);
+            directionChangeTimer = new System.Timers.Timer(5000);
             directionChangeTimer.Elapsed += DirectionChangeTimer_Elapsed;
             directionChangeTimer.AutoReset = true;
             directionChangeTimer.Start();
@@ -104,9 +104,8 @@ namespace TP.ConcurrentProgramming.Data
             {
                 foreach (Ball ball in BallsList)
                 {
-                    // odwrócenie kierunku prędkości
-                    ball.Velocity = new Vector(-ball.Velocity.x, -ball.Velocity.y);
-                    LogDiagnostics($"[Timer] Kula id={ball.Id} zmieniła kierunek na ({ball.Velocity.x:F2}, {ball.Velocity.y:F2}) o czasie: {e.SignalTime}");
+                    ball.Velocity = new Vector(ball.Velocity.x * 1.5, ball.Velocity.y * 1.5);
+                    LogDiagnostics($"[Timer] Kula id={ball.Id} zmieniła przyspieszenie na ({ball.Velocity.x:F2}, {ball.Velocity.y:F2}) o czasie: {e.SignalTime}");
                 }
             }
         }
