@@ -28,6 +28,8 @@ namespace TP.ConcurrentProgramming.Data
         private readonly ManualResetEvent diagnosticsEvent = new ManualResetEvent(false);
         // pomiar czasu tylko do diagnostyki
         private readonly Stopwatch globalTimer = new Stopwatch();
+
+        
         #endregion Fields
 
         #region ctor
@@ -211,6 +213,7 @@ namespace TP.ConcurrentProgramming.Data
             private readonly Func<bool> isDisposed;
             private readonly Action<string> logDiagnostics;
             private readonly Stopwatch globalTimer;
+            private long lastDirectionChangeTime = 0;
 
             // dla stałego klatkowania
             private const int TARGET_FRAME_TIME = 16; // ~60 FPS
@@ -251,6 +254,17 @@ namespace TP.ConcurrentProgramming.Data
                     {
                         UpdatePosition();
                         HandleCollisions();
+
+                        // Zmiana kierunku co 10 sekund
+                        long elapsed = globalTimer.ElapsedMilliseconds;
+                        if (elapsed - lastDirectionChangeTime >= 10_000)
+                        {
+                            // Odwróć kierunek prędkości
+                            ball.Velocity = new Vector(-ball.Velocity.x, -ball.Velocity.y);
+                            logDiagnostics($"Kula id={ball.Id} zmieniła kierunek na ({ball.Velocity.x:F2}, {ball.Velocity.y:F2})");
+
+                            lastDirectionChangeTime = elapsed;
+                        }
 
                         if (++updateCount % 30 == 0)
                         {
