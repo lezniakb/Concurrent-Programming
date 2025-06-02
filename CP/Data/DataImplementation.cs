@@ -28,8 +28,9 @@ namespace TP.ConcurrentProgramming.Data
         private readonly ManualResetEvent diagnosticsEvent = new ManualResetEvent(false);
         // pomiar czasu tylko do diagnostyki
         private readonly Stopwatch globalTimer = new Stopwatch();
+        private System.Timers.Timer? directionChangeTimer; // = new System.Timers.Timer(3000);
 
-        
+
         #endregion Fields
 
         #region ctor
@@ -87,10 +88,28 @@ namespace TP.ConcurrentProgramming.Data
                 thread.Start();
             }
 
+            // Inicjalizacja timera - jeden timer na cały zestaw kulek
+            directionChangeTimer = new System.Timers.Timer(10000);
+            directionChangeTimer.Elapsed += DirectionChangeTimer_Elapsed;
+            directionChangeTimer.AutoReset = true;
+            directionChangeTimer.Start();
+
             // dodanie informacji o rozpoczęciu działania programu
             LogDiagnostics($"Program uruchomiony z {numberOfBalls} kulami. Czas: {globalTimer.ElapsedMilliseconds}ms");
         }
 
+        private void DirectionChangeTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+        {
+            lock (lockObject) // zabezpiecz dostęp do listy kulek
+            {
+                foreach (Ball ball in BallsList)
+                {
+                    // odwrócenie kierunku prędkości
+                    ball.Velocity = new Vector(-ball.Velocity.x, -ball.Velocity.y);
+                    LogDiagnostics($"[Timer] Kula id={ball.Id} zmieniła kierunek na ({ball.Velocity.x:F2}, {ball.Velocity.y:F2}) o czasie: {e.SignalTime}");
+                }
+            }
+        }
         public override void SetScreenSize(double width, double height)
         {
             screenWidth = (int)width;
@@ -115,6 +134,13 @@ namespace TP.ConcurrentProgramming.Data
                     diagnosticsWriterTask.Wait(1000);
                     FlushDiagnosticsQueue();
                     BallsList.Clear();
+                    if (directionChangeTimer != null)
+                    {
+                        directionChangeTimer.Elapsed -= DirectionChangeTimer_Elapsed;
+                        directionChangeTimer.Stop();
+                        directionChangeTimer.Dispose();
+                        directionChangeTimer = null;
+                    }
                 }
             }
             else
@@ -254,17 +280,6 @@ namespace TP.ConcurrentProgramming.Data
                     {
                         UpdatePosition();
                         HandleCollisions();
-
-                        // Zmiana kierunku co 10 sekund
-                        long elapsed = globalTimer.ElapsedMilliseconds;
-                        if (elapsed - lastDirectionChangeTime >= 10_000)
-                        {
-                            // Odwróć kierunek prędkości
-                            ball.Velocity = new Vector(-ball.Velocity.x, -ball.Velocity.y);
-                            logDiagnostics($"Kula id={ball.Id} zmieniła kierunek na ({ball.Velocity.x:F2}, {ball.Velocity.y:F2})");
-
-                            lastDirectionChangeTime = elapsed;
-                        }
 
                         if (++updateCount % 30 == 0)
                         {
